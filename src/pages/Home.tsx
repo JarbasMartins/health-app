@@ -1,82 +1,227 @@
+import { useUserStore } from "../stores/user.store";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Heart, LayoutDashboard, Pill, Smile, Droplets, ArrowRight, Activity, ShieldCheck, Clock } from "lucide-react";
+import HydrationTracker from "../components/boards/HydrationTracker";
+import MoodDiary from "../components/boards/MoodDiary";
+import MedicationReminder from "../components/boards/MedicationReminder";
+import Dashboard from "../components/boards/Dashboard";
+
+type BoardType = "dashboard" | "medication" | "mood" | "hydration";
+
 export default function HomePage() {
+    const user = useUserStore((s) => s.user);
+    const signOut = useUserStore((s) => s.signOut);
+    const [activeBoard, setActiveBoard] = useState<BoardType>("dashboard");
+    const navigate = useNavigate();
+    const firstName = user?.name?.trim().split(" ")[0] ?? "Usuário";
+
+    const boards: Record<BoardType, React.ReactNode> = {
+        dashboard: <Dashboard />,
+        medication: <MedicationReminder />,
+        mood: <MoodDiary />,
+        hydration: <HydrationTracker />,
+    };
+
     return (
-        <div className="min-h-screen w-full h-full bg-gray-50">
-            <header className="bg-white">
-                <div className="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
-                    <a className="block text-teal-600" href="#">
-                        <span className="sr-only">Home</span>
-                        <svg className="h-8" viewBox="0 0 28 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M0.41 10.3847C1.14777 7.4194 2.85643 4.7861 5.2639 2.90424C7.6714 1.02234 10.6393 0 13.695 0C16.7507 0 19.7186 1.02234 22.1261 2.90424C24.5336 4.7861 26.2422 7.4194 26.98 10.3847H25.78C23.7557 10.3549 21.7729 10.9599 20.11 12.1147C20.014 12.1842 19.9138 12.2477 19.81 12.3047H19.67C19.5662 12.2477 19.466 12.1842 19.37 12.1147C17.6924 10.9866 15.7166 10.3841 13.695 10.3841C11.6734 10.3841 9.6976 10.9866 8.02 12.1147C7.924 12.1842 7.8238 12.2477 7.72 12.3047H7.58C7.4762 12.2477 7.376 12.1842 7.28 12.1147C5.6171 10.9599 3.6343 10.3549 1.61 10.3847H0.41ZM23.62 16.6547C24.236 16.175 24.9995 15.924 25.78 15.9447H27.39V12.7347H25.78C24.4052 12.7181 23.0619 13.146 21.95 13.9547C21.3243 14.416 20.5674 14.6649 19.79 14.6649C19.0126 14.6649 18.2557 14.416 17.63 13.9547C16.4899 13.1611 15.1341 12.7356 13.745 12.7356C12.3559 12.7356 11.0001 13.1611 9.86 13.9547C9.2343 14.416 8.4774 14.6649 7.7 14.6649C6.9226 14.6649 6.1657 14.416 5.54 13.9547C4.4144 13.1356 3.0518 12.7072 1.66 12.7347H0V15.9447H1.61C2.39051 15.924 3.154 16.175 3.77 16.6547C4.908 17.4489 6.2623 17.8747 7.65 17.8747C9.0377 17.8747 10.392 17.4489 11.53 16.6547C12.1468 16.1765 12.9097 15.9257 13.69 15.9447C14.4708 15.9223 15.2348 16.1735 15.85 16.6547C16.9901 17.4484 18.3459 17.8738 19.735 17.8738C21.1241 17.8738 22.4799 17.4484 23.62 16.6547ZM23.62 22.3947C24.236 21.915 24.9995 21.664 25.78 21.6847H27.39V18.4747H25.78C24.4052 18.4581 23.0619 18.886 21.95 19.6947C21.3243 20.156 20.5674 20.4049 19.79 20.4049C19.0126 20.4049 18.2557 20.156 17.63 19.6947C16.4899 18.9011 15.1341 18.4757 13.745 18.4757C12.3559 18.4757 11.0001 18.9011 9.86 19.6947C9.2343 20.156 8.4774 20.4049 7.7 20.4049C6.9226 20.4049 6.1657 20.156 5.54 19.6947C4.4144 18.8757 3.0518 18.4472 1.66 18.4747H0V21.6847H1.61C2.39051 21.664 3.154 21.915 3.77 22.3947C4.908 23.1889 6.2623 23.6147 7.65 23.6147C9.0377 23.6147 10.392 23.1889 11.53 22.3947C12.1468 21.9165 12.9097 21.6657 13.69 21.6847C14.4708 21.6623 15.2348 21.9135 15.85 22.3947C16.9901 23.1884 18.3459 23.6138 19.735 23.6138C21.1241 23.6138 22.4799 23.1884 23.62 22.3947Z"
-                                fill="currentColor"
-                            ></path>
-                        </svg>
-                    </a>
+        <div className="min-h-screen w-full bg-slate-50 text-slate-900 font-sans selection:bg-teal-100">
+            <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-white">
+                            <Heart size={20} fill="currentColor" />
+                        </div>
+                        <span className="text-xl font-bold tracking-tight text-slate-900">HealthTrack</span>
+                    </div>
 
-                    <div className="flex flex-1 items-center justify-end md:justify-between">
-                        <nav aria-label="Global" className="hidden md:block">
-                            <ul className="flex items-center gap-6 text-sm">
-                                <li>
-                                    <a className="text-gray-500 transition hover:text-gray-500/75" href="#">
-                                        {" "}
-                                        Sobre{" "}
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a className="text-gray-500 transition hover:text-gray-500/75" href="#">
-                                        {" "}
-                                        Serviços{" "}
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a className="text-gray-500 transition hover:text-gray-500/75" href="#">
-                                        {" "}
-                                        Projetos{" "}
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-
-                        <div className="flex items-center gap-4">
-                            <div className="sm:flex sm:gap-4">
-                                <a
-                                    className="block rounded-md bg-teal-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-teal-700"
-                                    href="/login"
+                    <div className="flex items-center gap-4">
+                        {!user ? (
+                            <>
+                                <button
+                                    onClick={() => navigate("/login")}
+                                    className="text-sm font-medium text-slate-600 hover:text-teal-600 transition-colors"
                                 >
                                     Entrar
-                                </a>
-
-                                <a
-                                    className="hidden rounded-md bg-gray-100 px-5 py-2.5 text-sm font-medium text-teal-600 transition hover:text-teal-600/75 sm:block"
-                                    href="/register"
+                                </button>
+                                <button
+                                    onClick={() => navigate("/register")}
+                                    className="rounded-full bg-teal-600 px-5 py-2 text-sm font-medium text-white shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all"
                                 >
-                                    Cadastrar
-                                </a>
+                                    Começar Agora
+                                </button>
+                            </>
+                        ) : (
+                            <div className="flex items-center gap-4">
+                                <span className="hidden text-sm font-medium text-slate-600 sm:inline-block">
+                                    Olá, {firstName}.
+                                </span>
+
+                                <button
+                                    onClick={() => {
+                                        signOut();
+                                        navigate("/login");
+                                    }}
+                                    className="rounded-full border border-slate-200 bg-white px-8 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors"
+                                >
+                                    Sair
+                                </button>
                             </div>
-
-                            <button className="block rounded-sm bg-gray-100 p-2.5 text-gray-600 transition hover:text-gray-600/75 md:hidden">
-                                <span className="sr-only">Toggle menu</span>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="size-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    ></path>
-                                </svg>
-                            </button>
-                        </div>
+                        )}
                     </div>
                 </div>
             </header>
+
+            <main className="flex-1">
+                {!user ? (
+                    <div className="flex flex-col">
+                        <section className="relative overflow-hidden pt-8 pb-10 lg:pt-12 lg:pb-16">
+                            <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+                                <div className="mx-auto max-w-3xl">
+                                    <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                                        Seu bem-estar, <span className="text-teal-600">simplificado</span>.
+                                    </h1>
+                                    <p className="mt-6 text-lg text-slate-600 leading-8">
+                                        Gerencie suas medicações, monitore seu humor e acompanhe sua hidratação em um
+                                        único lugar. Simples, intuitivo e feito para você.
+                                    </p>
+                                    <div className="mt-10 flex items-center justify-center gap-x-6">
+                                        <button
+                                            onClick={() => navigate("/register")}
+                                            className="group flex items-center gap-2 rounded-full bg-teal-600 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-teal-600/20 hover:bg-teal-700 hover:shadow-teal-600/30 transition-all"
+                                        >
+                                            Criar conta grátis
+                                            <ArrowRight
+                                                size={18}
+                                                className="group-hover:translate-x-1 transition-transform"
+                                            />
+                                        </button>
+                                        <button
+                                            onClick={() => navigate("/login")}
+                                            className="text-base font-semibold text-slate-900 hover:text-teal-600 transition-colors"
+                                        >
+                                            Já tenho conta <span aria-hidden="true">→</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    <div className="relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                                            <Pill size={24} />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-slate-900">Controle de Medicação</h3>
+                                        <p className="mt-2 text-slate-600">
+                                            Nunca mais esqueça seus remédios. Receba lembretes e mantenha um histórico
+                                            completo.
+                                        </p>
+                                    </div>
+
+                                    <div className="relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-100 text-yellow-600">
+                                            <Smile size={24} />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-slate-900">Diário de Humor</h3>
+                                        <p className="mt-2 text-slate-600">
+                                            Entenda seus padrões emocionais registrando como você se sente ao longo dos
+                                            dias.
+                                        </p>
+                                    </div>
+
+                                    <div className="relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-100 text-cyan-600">
+                                            <Droplets size={24} />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-slate-900">
+                                            Rastreador de Hidratação
+                                        </h3>
+                                        <p className="mt-2 text-slate-600">
+                                            Defina metas diárias de água e acompanhe seu progresso para uma vida mais
+                                            saudável.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="bg-white py-8 sm:py-12 border-t border-slate-100">
+                            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                                <div className="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:gap-8 text-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="rounded-full bg-teal-50 p-3 mb-4">
+                                            <ShieldCheck className="h-6 w-6 text-teal-600" />
+                                        </div>
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-900">
+                                            Privacidade Total
+                                        </h3>
+                                        <p className="mt-2 text-sm text-slate-500 max-w-xs">
+                                            Seus dados de saúde são apenas seus. Segurança e criptografia de ponta a
+                                            ponta.
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <div className="rounded-full bg-teal-50 p-3 mb-4">
+                                            <Activity className="h-6 w-6 text-teal-600" />
+                                        </div>
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-900">
+                                            Insights Diários
+                                        </h3>
+                                        <p className="mt-2 text-sm text-slate-500 max-w-xs">
+                                            Visualize seu progresso com gráficos simples e intuitivos no seu dashboard.
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <div className="rounded-full bg-teal-50 p-3 mb-4">
+                                            <Clock className="h-6 w-6 text-teal-600" />
+                                        </div>
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-900">
+                                            Tempo Real
+                                        </h3>
+                                        <p className="mt-2 text-sm text-slate-500 max-w-xs">
+                                            Atualizações instantâneas para que você esteja sempre no controle da sua
+                                            rotina.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                ) : (
+                    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                        <div className="mb-8">
+                            <nav className="flex p-1 bg-slate-200/60 rounded-xl overflow-x-auto no-scrollbar">
+                                {[
+                                    {
+                                        id: "dashboard",
+                                        icon: LayoutDashboard,
+                                        label: "Visão Geral",
+                                    },
+                                    { id: "medication", icon: Pill, label: "Medicações" },
+                                    { id: "mood", icon: Smile, label: "Humor" },
+                                    { id: "hydration", icon: Droplets, label: "Hidratação" },
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveBoard(tab.id as BoardType)}
+                                        className={`flex-1 sm:min-w-[100px] flex items-center justify-center gap-2 py-3 sm:py-2.5 px-2 sm:px-4 text-sm font-medium rounded-lg transition-all duration-200 ${
+                                            activeBoard === tab.id
+                                                ? "bg-white text-teal-700 shadow-sm ring-1 ring-black/5"
+                                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                                        }`}
+                                        title={tab.label}
+                                    >
+                                        <tab.icon size={20} />
+                                        <span className="hidden sm:inline whitespace-nowrap">{tab.label}</span>
+                                    </button>
+                                ))}
+                            </nav>
+                        </div>
+
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {boards[activeBoard]}
+                        </div>
+                    </div>
+                )}
+            </main>
         </div>
     );
 }
