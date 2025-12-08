@@ -6,6 +6,7 @@ import { FormContainer } from '../layout/FormContainer';
 import { Pill, Plus } from 'lucide-react';
 import type { MedicationType } from '../../utils/validators';
 import Modal from '../ui/Modal';
+import Card from '../ui/Card';
 
 export default function MedicationReminder() {
   const [open, setOpen] = useState(false);
@@ -31,33 +32,32 @@ export default function MedicationReminder() {
 
   return (
     <div className="w-full h-auto space-y-4">
-      <header className="flex items-center justify-between flex-col space-y-2 md:flex-row md:space-y-0">
-        <div className="text-center md:text-start">
-          <h2 className="text-base md:text-lg lg:text-xl font-semibold">
-            Lembrete de Medicamentos
-          </h2>
-          <p className="text-sm md:text-base lg:text-lg opacity-70">
-            Gerencie seus medicamentos e acompanhe sua adesão
-          </p>
+      {/* HEADER */}
+      <header className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Lembrete de Medicamentos</h2>
+          <p className="text-sm opacity-70">Gerencie seus medicamentos</p>
         </div>
 
         <button
           onClick={() => setOpen(true)}
-          className="bg-black flex gap-1 items-center justify-center text-white px-4 py-2 w-full md:w-auto rounded-lg font-bold"
+          className="bg-white hover:bg-blue-50 border border-gray-300 opacity-50 text-black p-3 rounded-lg"
         >
-          <Plus size={24} /> Adicionar
+          <Plus size={22} />
         </button>
       </header>
 
-      <div className="w-full h-80 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-col space-y-1 px-8">
-        <Pill size={64} className="opacity-40" />
-        <h2 className="text-base md:text-lg lg:text-xl font-normal opacity-60">
-          Nenhum medicamento cadastrado
-        </h2>
-        <p className="text-sm md:text-base lg:text-lg opacity-60">
-          Clique em adicionar para cadastrar seu medicamento
-        </p>
-      </div>
+      <Card icon={Pill} className="h-auto">
+        <div className="flex flex-col items-center text-center justify-center py-8">
+          <Pill size={64} className="opacity-40" />
+          <h2 className="text-base md:text-lg lg:text-xl font-normal opacity-60">
+            Nenhum medicamento cadastrado
+          </h2>
+          <p className="text-sm md:text-base lg:text-lg opacity-60 px-4">
+            Clique em adicionar para cadastrar seu medicamento
+          </p>
+        </div>
+      </Card>
 
       <Modal isOpen={open} onClose={() => setOpen(false)}>
         <FormContainer

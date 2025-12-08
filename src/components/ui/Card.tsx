@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 
 interface CardProps {
-  title: string;
+  title?: string;
   icon?: LucideIcon;
   children?: React.ReactNode;
   className?: string;
