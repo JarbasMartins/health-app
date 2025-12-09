@@ -13,23 +13,19 @@ type LoginType = {
 };
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
   const signIn = useUserStore((s) => s.signIn);
+  const loading = useUserStore((s) => s.loading);
   const [formError, setFormError] = useState<string | null>(null);
   const { register, handleSubmit } = useForm<LoginType>();
   const [showPassword, setShowPassword] = useState({ password: false });
 
   const onSubmit = async (data: LoginType) => {
     setFormError(null);
-    setIsLoading(true);
     try {
       await signIn(data);
     } catch (error: unknown) {
       setFormError(error.message || 'Erro ao fazer login');
       console.error('Erro no login:', error);
-      setIsLoading(false);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -86,10 +82,10 @@ export default function LoginPage() {
         />
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={loading}
           className="w-full cursor-pointer py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
         >
-          {isLoading ? 'Entrando...' : 'Entrar'}
+          {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </FormContainer>
     </div>

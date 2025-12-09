@@ -1,23 +1,23 @@
 import { createBrowserRouter } from 'react-router-dom';
-import RegisterPage from '../pages/Register';
+
+import AppHome from '../pages/App';
+import LandingPage from '../pages/Landing';
 import LoginPage from '../pages/Login';
-import HomePage from '../pages/Home';
+import RegisterPage from '../pages/Register';
+import PrivateLayout from '../layout/PrivateLayout';
+import PublicLayout from '../layout/PublicLayout';
 
 export const router = createBrowserRouter([
   {
+    element: <PublicLayout />,
     children: [
-      {
-        path: '/login',
-        element: <LoginPage />,
-      },
-      {
-        path: '/register',
-        element: <RegisterPage />,
-      },
-      {
-        path: '/',
-        element: <HomePage />,
-      },
+      { path: '/', element: <LandingPage /> },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
     ],
+  },
+  {
+    element: <PrivateLayout />,
+    children: [{ path: '/app', element: <AppHome /> }],
   },
 ]);

@@ -32,13 +32,15 @@ export const useUserStore = create<UserState>()(
       loading: true,
 
       loadSession: async () => {
+        set({ loading: true });
         try {
           const session = await auth.getSession();
           const u = session.data?.user;
-
-          if (u) {
-            set({ user: u as User, isAuthenticated: true });
-          }
+          if (!u) set({ user: null, isAuthenticated: false, loading: false });
+          set({ user: u as User, isAuthenticated: true, loading: false });
+        } catch (error) {
+          set({ user: null, isAuthenticated: false, loading: false });
+          throw error;
         } finally {
           set({ loading: false });
         }
@@ -55,14 +57,9 @@ export const useUserStore = create<UserState>()(
           password: data.password,
           callbackURL: '/',
         });
-
         if (response.error) throw new Error(response.error.message);
-
         if (response.data?.user) {
-          set({
-            user: response.data.user as User,
-            isAuthenticated: true,
-          });
+          set({ user: response.data.user as User, isAuthenticated: true });
         }
       },
 
@@ -73,6 +70,10 @@ export const useUserStore = create<UserState>()(
     }),
     {
       name: 'user-store',
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );
