@@ -100,10 +100,8 @@ export default function MoodDiary() {
                       }
                     `}
                   >
-                    <mood.icon size={32} />
-                    <p className="text-sm md:text-base font-semibold mt-1">
-                      {mood.label}
-                    </p>
+                    <mood.icon size={24} />
+                    <p className="text-sm font-semibold">{mood.label}</p>
                   </button>
                 );
               })}

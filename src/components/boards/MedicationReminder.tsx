@@ -32,7 +32,6 @@ export default function MedicationReminder() {
 
   return (
     <div className="w-full h-auto space-y-4">
-      {/* HEADER */}
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Lembrete de Medicamentos</h2>
