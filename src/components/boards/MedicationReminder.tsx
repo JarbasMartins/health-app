@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { medicationSchema } from '../../utils/validators';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormContainer } from '../layout/FormContainer';
+import { FormContainer } from '../ui/form';
 import { Pill, Plus } from 'lucide-react';
 import type { MedicationType } from '../../utils/validators';
-import Modal from '../ui/Modal';
-import Card from '../ui/Card';
+import Modal from '../ui/modal';
+import Card from '../ui/card';
 
 export default function MedicationReminder() {
   const [open, setOpen] = useState(false);

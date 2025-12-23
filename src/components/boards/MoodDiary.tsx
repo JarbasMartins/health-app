@@ -11,8 +11,8 @@ import {
   Activity,
   Ellipsis,
 } from 'lucide-react';
-import Card from '../ui/Card';
-import Modal from '../ui/Modal';
+import Card from '../ui/card';
+import Modal from '../ui/modal';
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
