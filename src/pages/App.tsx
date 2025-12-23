@@ -13,9 +13,7 @@ export default function AppHome() {
   const user = useUserStore((s) => s.user);
   const signOut = useUserStore((s) => s.signOut);
   const navigate = useNavigate();
-
   const firstName = user?.name?.trim().split(' ')[0] ?? 'Usuário';
-
   const [activeBoard, setActiveBoard] = useState<BoardType>('dashboard');
 
   const boards: Record<BoardType, React.ReactNode> = {
@@ -24,6 +22,13 @@ export default function AppHome() {
     mood: <MoodDiary />,
     hydration: <HydrationTracker />,
   };
+
+  const BOARDS_DATA = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Visão Geral' },
+    { id: 'medication', icon: Pill, label: 'Medicações' },
+    { id: 'mood', icon: Smile, label: 'Humor' },
+    { id: 'hydration', icon: Droplets, label: 'Hidratação' },
+  ];
 
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-900 font-sans">
@@ -62,16 +67,7 @@ export default function AppHome() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <nav className="flex p-1 bg-slate-200/60 rounded-xl overflow-x-auto no-scrollbar">
-            {[
-              {
-                id: 'dashboard',
-                icon: LayoutDashboard,
-                label: 'Visão Geral',
-              },
-              { id: 'medication', icon: Pill, label: 'Medicações' },
-              { id: 'mood', icon: Smile, label: 'Humor' },
-              { id: 'hydration', icon: Droplets, label: 'Hidratação' },
-            ].map((tab) => (
+            {BOARDS_DATA.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveBoard(tab.id as BoardType)}
@@ -90,9 +86,7 @@ export default function AppHome() {
           </nav>
         </div>
 
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {boards[activeBoard]}
-        </div>
+        <div>{boards[activeBoard]}</div>
       </main>
     </div>
   );

@@ -1,8 +1,8 @@
 'use client';
 
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { FormContainer } from '../components/layout/FormContainer';
-import { InputField } from '../components/ui/InputField';
+import { FormContainer } from '../components/ui/form';
+import { InputField } from '../components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, type RegisterType } from '../utils/validators';
@@ -11,14 +11,14 @@ import { useUserStore } from '../stores/user.store';
 import { useNavigate } from 'react-router-dom';
 
 export default function RegisterPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const loading = useUserStore((s) => s.loading);
   const signUp = useUserStore((s) => s.signUp);
   const [formError, setFormError] = useState<string | null>(null);
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState({
     password: false,
     confirmPassword: false,
   });
+  const navigate = useNavigate();
 
   const {
     register,
@@ -30,16 +30,14 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterType) => {
     setFormError(null);
-    setIsLoading(true);
     try {
       await signUp(data);
       navigate('/login');
     } catch (error: unknown) {
-      setFormError(error.message || 'Erro ao fazer login');
+      const message =
+        error instanceof Error ? error.message : 'Erro ao fazer registro';
+      setFormError(message);
       console.error('Erro no login:', error);
-      setIsLoading(false);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -51,7 +49,7 @@ export default function RegisterPage() {
         title="Criar Conta"
         footer={
           <p className="text-center text-sm text-gray-600 mt-4">
-            Já tem conta?{' '}
+            Já possui uma conta?{' '}
             <a href="/login" className="text-indigo-600 hover:underline">
               Entrar
             </a>
@@ -129,11 +127,11 @@ export default function RegisterPage() {
         />
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={loading}
           className={`w-full py-2 rounded-lg font-medium text-white transition
-              ${isLoading ? 'bg-gray-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+              ${loading ? 'bg-gray-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
         >
-          {isLoading ? 'Cadastrando...' : 'Cadastrar'}
+          {loading ? 'Cadastrando...' : 'Cadastrar'}
         </button>
       </FormContainer>
     </div>

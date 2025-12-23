@@ -4,8 +4,8 @@ import { Mail, Lock, EyeOff, Eye } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useUserStore } from '../stores/user.store';
-import { FormContainer } from '../components/layout/FormContainer';
-import { InputField } from '../components/ui/InputField';
+import { FormContainer } from '../components/ui/form';
+import { InputField } from '../components/ui/input';
 
 type LoginType = {
   email: string;
@@ -24,7 +24,9 @@ export default function LoginPage() {
     try {
       await signIn(data);
     } catch (error: unknown) {
-      setFormError(error.message || 'Erro ao fazer login');
+      const message =
+        error instanceof Error ? error.message : 'Erro ao fazer login';
+      setFormError(message);
       console.error('Erro no login:', error);
     }
   };
@@ -80,6 +82,7 @@ export default function LoginPage() {
             )
           }
         />
+
         <button
           type="submit"
           disabled={loading}
