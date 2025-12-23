@@ -1,53 +1,74 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { http } from '../services/http';
+import { useUserStore } from './user.store';
+import type { HydrationResponse } from '../types/api';
 
 interface HydrationStore {
-  hydration: number;
-  meta: number;
-  loading: boolean;
-  progress: number;
-  isGoalReached: boolean;
-  setHydration: (value: number) => void;
-  addHydration: (value: number) => void;
-  resetHydration: () => void;
-  setMeta: (value: number) => void;
+    hydration: number;
+    meta: number;
+    loading: boolean;
+    progress: number;
+    isGoalReached: boolean;
+    fetchHydrationDaily: () => void;
+    addHydration: (value: number) => void;
+    setMeta: (value: number) => void;
 }
 
-export const useHydrationStore = create<HydrationStore>()(
-  persist(
-    (set, get) => ({
-      hydration: 0,
-      meta: 2000,
-      loading: false,
-      progress: 0,
-      isGoalReached: false,
+const calculateState = (hydration: number, meta: number) => ({
+    hydration,
+    progress: meta > 0 ? Math.min((hydration / meta) * 100, 100) : 0,
+    isGoalReached: hydration >= meta,
+});
 
-      setHydration: (value: number) => {
-        const hydration = Math.max(value, 0);
-        const progress = Math.min((hydration / get().meta) * 100, 100);
-        const isGoalReached = hydration >= get().meta;
-        set({ hydration, progress, isGoalReached });
-      },
+export const useHydrationStore = create<HydrationStore>()((set, get) => ({
+    hydration: 0,
+    meta: 2000,
+    loading: false,
+    progress: 0,
+    isGoalReached: false,
 
-      addHydration: (value: number) => {
-        const meta = get().meta;
-        const newHydration = Math.max(get().hydration + value, 0);
-        const progress = Math.min((newHydration / get().meta) * 100, 100);
-        const isGoalReached = newHydration >= meta;
-        set({ hydration: newHydration, progress, isGoalReached });
-      },
+    fetchHydrationDaily: async () => {
+        const userId = useUserStore.getState().user?.id;
+        if (!userId) return;
 
-      resetHydration: () =>
-        set({ hydration: 0, progress: 0, isGoalReached: false }),
+        const date = new Date().toISOString().split('T')[0];
+        set({ loading: true });
 
-      setMeta: (value) => {
-        const meta = value;
-        const hydration = get().hydration;
-        const progress = Math.min((hydration / meta) * 100, 100);
-        const isGoalReached = hydration >= meta;
-        set({ meta, progress, isGoalReached });
-      },
-    }),
-    { name: 'hydration-store' }
-  )
-);
+        try {
+            const { data } = await http.get<HydrationResponse>(`/hydration/${userId}/${date}`);
+            const value = Number(data?.totalMl) || 0;
+
+            set({ ...calculateState(value, get().meta), loading: false });
+        } catch (error) {
+            set({ ...calculateState(0, get().meta), loading: false });
+        }
+    },
+
+    addHydration: async (value: number) => {
+        const userId = useUserStore.getState().user?.id;
+        if (!userId || value <= 0) return;
+
+        const date = new Date().toISOString().split('T')[0];
+        const newTotal = get().hydration + value;
+
+        set({ loading: true });
+
+        try {
+            const { data } = await http.post<HydrationResponse>('/hydration', {
+                userId,
+                date,
+                totalMl: newTotal,
+            });
+
+            const confirmedValue = Number(data?.totalMl) || newTotal;
+            set({ ...calculateState(confirmedValue, get().meta), loading: false });
+        } catch (error) {
+            set({ loading: false });
+        }
+    },
+
+    setMeta: (value: number) => {
+        const newMeta = Math.max(value, 1);
+        set({ meta: newMeta, ...calculateState(get().hydration, newMeta) });
+    },
+}));
