@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { GlassWater, Droplet, Minus, Plus, Cog, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { GlassWater, Droplet, Plus, RotateCcw, Cog, CheckCircle, XCircle } from 'lucide-react';
 import Card from '../ui/card';
 import Modal from '../ui/modal';
 import { useHydrationStore } from '../../stores/hydration.store';
 import { InputField } from '../ui/input';
 
 export default function HydrationTracker() {
-    const { hydration, meta, progress, isGoalReached, loading, addHydration, setMeta, fetchHydrationDaily } = useHydrationStore();
+    const { hydration, meta, progress, isGoalReached, loading, addHydration, setMeta, resetHydration, fetchHydrationDaily } = useHydrationStore();
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
@@ -76,8 +76,8 @@ export default function HydrationTracker() {
                     </div>
 
                     <div className="w-full flex items-center gap-4">
-                        <div className="flex-1 p-6 bg-linear-to-br from-blue-50 to-blue-100 rounded-2xl flex flex-col items-center shadow-sm border border-blue-200">
-                            {loading ? <Loader2 className="animate-spin text-blue-600 mb-2" size={32} /> : <GlassWater size={40} className="text-blue-600 mb-1" />}
+                        <div className="flex-1 p-6 bg-linear-to-br bg-blue-50 rounded-2xl flex flex-col items-center shadow-sm border border-blue-200">
+                            <GlassWater size={40} className="text-blue-600 mb-1" />
                             <span className="text-3xl font-bold text-slate-800">
                                 {hydration}
                                 <span className="text-sm text-slate-400 ml-1 font-normal">ml</span>
@@ -87,10 +87,10 @@ export default function HydrationTracker() {
                         <div className="flex flex-col gap-3">
                             <button
                                 disabled={loading || hydration <= 0}
-                                onClick={() => addHydration(-50)}
+                                onClick={() => resetHydration()}
                                 className="p-3 border border-slate-200 rounded-xl hover:bg-red-50 hover:text-red-600 disabled:opacity-30 transition-colors"
                             >
-                                <Minus size={24} />
+                                <RotateCcw size={24} />
                             </button>
                             <button
                                 disabled={loading}
@@ -111,13 +111,7 @@ export default function HydrationTracker() {
                         <p className="text-sm text-slate-500">Defina seu objetivo de consumo diário</p>
                     </div>
 
-                    <InputField
-                        label="Meta diária em mililitros"
-                        type="number"
-                        value={meta}
-                        onChange={(e) => setMeta(Number(e.target.value))}
-                        className="text-center text-lg font-semibold"
-                    />
+                    <InputField label="Meta diária em mililitros" type="number" onChange={(e) => setMeta(Number(e.target.value))} className="text-center text-lg font-semibold" />
 
                     <button
                         onClick={() => setOpen(false)}
