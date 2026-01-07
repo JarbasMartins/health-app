@@ -192,7 +192,7 @@ export default function MoodDiary() {
                                     placeholder="Digite seu comentário aqui..."
                                     {...register('comment')}
                                 />
-                                {errors && <p className="text-red-500 bg-red-50 border border-red-200 p-2 rounded-lg text-sm">{errors.comment?.message}</p>}
+                                {errors.comment && <p className="text-red-500 bg-red-50 border border-red-200 p-2 rounded-lg text-sm">{errors.comment?.message}</p>}
                             </div>
 
                             <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700  shadow-blue-200 transition-colors">

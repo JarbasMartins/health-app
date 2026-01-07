@@ -114,7 +114,7 @@ export default function HydrationTracker() {
 
                     <InputField
                         label="Meta diária em mililitros"
-                        placeholder="Digite o valor..."
+                        placeholder="Ex: 2000"
                         type="number"
                         onChange={(e) => setTempMeta(Number(e.target.value))}
                         className="text-center text-lg font-semibold"
