@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { http } from '../services/http';
-import type { HydrationResponse } from '../types/api';
 import { useUserStore } from './user.store';
+import type { HydrationResponse } from '../types/api';
 
 interface HydrationStore {
     hydration: number;
@@ -26,13 +26,7 @@ const getCurrentDate = () => new Date().toISOString().split('T')[0];
 
 export const useHydrationStore = create<HydrationStore>()((set, get) => {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const clearTimer = () => {
-        if (debounceTimer) {
-            clearTimeout(debounceTimer);
-            debounceTimer = null;
-        }
-    };
+    let stableValue: number | null = null;
 
     return {
         hydration: 0,
@@ -48,118 +42,83 @@ export const useHydrationStore = create<HydrationStore>()((set, get) => {
                 set({ error: 'Usuário não identificado' });
                 return;
             }
-
-            const date = getCurrentDate();
             set({ loading: true, error: null });
 
             try {
+                const date = getCurrentDate();
                 const { data } = await http.get<HydrationResponse>(`/hydration/${userId}/${date}`);
                 const value = Number(data?.totalMl) || 0;
-
-                set({
-                    hydration: value,
-                    ...calculateState(value, get().meta),
-                    loading: false,
-                });
+                set({ hydration: value, ...calculateState(value, get().meta), loading: false });
             } catch (error) {
-                console.error('Erro ao buscar hidratação:', error);
-                set({
-                    hydration: 0,
-                    ...calculateState(0, get().meta),
-                    loading: false,
-                    error: 'Não foi possível carregar os dados',
-                });
+                set({ loading: false, error: 'Erro ao carregar dados.' });
             }
         },
 
         addHydration: async (value: number) => {
             const userId = useUserStore.getState().user?.id;
-            if (!userId) {
-                set({ error: 'Usuário não identificado' });
-                return;
+            if (!userId || value <= 0) return;
+
+            if (stableValue === null) {
+                stableValue = get().hydration;
             }
 
-            if (value <= 0) return;
-
-            const date = getCurrentDate();
-            const previousHydration = get().hydration;
-            const newHydration = previousHydration + value;
-
-            set({
-                hydration: newHydration,
-                ...calculateState(newHydration, get().meta),
-                error: null,
-            });
-
-            clearTimer();
+            const newHydration = get().hydration + value;
+            set({ hydration: newHydration, ...calculateState(newHydration, get().meta), error: null });
+            if (debounceTimer) clearTimeout(debounceTimer);
 
             debounceTimer = setTimeout(async () => {
+                const date = getCurrentDate();
                 try {
+                    const totalToSend = get().hydration;
                     const { data } = await http.post<HydrationResponse>('/hydration', {
                         userId,
                         date,
-                        totalMl: newHydration,
+                        totalMl: totalToSend,
                     });
 
-                    const confirmedValue = Number(data?.totalMl) || newHydration;
-                    set({
-                        hydration: confirmedValue,
-                        ...calculateState(confirmedValue, get().meta),
-                    });
+                    const confirmedValue = Number(data?.totalMl);
+                    set({ hydration: confirmedValue, ...calculateState(confirmedValue, get().meta) });
+                    stableValue = null;
                 } catch (error) {
-                    console.error('Erro ao sincronizar:', error);
-
-                    set({
-                        hydration: previousHydration,
-                        ...calculateState(previousHydration, get().meta),
-                        error: 'Falha ao sincronizar. Tente novamente.',
-                    });
+                    const rollbackValue = stableValue ?? 0;
+                    set({ hydration: rollbackValue, ...calculateState(rollbackValue, get().meta), error: 'Falha ao sincronizar. Tente novamente.' });
                 }
-            }, 2000);
+            }, 1500);
         },
 
         resetHydration: async () => {
             const userId = useUserStore.getState().user?.id;
-            if (!userId) {
-                set({ error: 'Usuário não identificado' });
-                return;
-            }
+            if (!userId) return;
 
-            const date = getCurrentDate();
-            const previousHydration = get().hydration;
+            if (debounceTimer) clearTimeout(debounceTimer);
+            stableValue = null;
 
-            set({
-                hydration: 0,
-                ...calculateState(0, get().meta),
-                loading: true,
-                error: null,
-            });
+            const previousValue = get().hydration;
+            set({ hydration: 0, ...calculateState(0, get().meta), loading: true });
 
             try {
-                await http.post<HydrationResponse>('/hydration', {
+                const date = getCurrentDate();
+                const { data } = await http.post<HydrationResponse>('/hydration', {
                     userId,
                     date,
                     totalMl: 0,
                 });
-
-                set({ loading: false });
+                set({ loading: false, hydration: Number(data?.totalMl) || 0 });
             } catch (error) {
                 console.error('Erro ao resetar:', error);
-
-                set({
-                    hydration: previousHydration,
-                    ...calculateState(previousHydration, get().meta),
-                    loading: false,
-                    error: 'Falha ao resetar. Tente novamente.',
-                });
+                set({ hydration: previousValue, ...calculateState(previousValue, get().meta), loading: false, error: 'Não foi possível resetar.' });
             }
         },
 
         setMeta: (value: number) => {
-            const newMeta = Math.max(value, 100);
+            const normalizedMeta = Math.max(100, value);
+            const hydration = get().hydration;
+
+            const derived = calculateState(hydration, normalizedMeta);
+
             set({
-                meta: newMeta,
-                ...calculateState(get().hydration, newMeta),
+                meta: normalizedMeta,
+                ...derived,
             });
         },
 

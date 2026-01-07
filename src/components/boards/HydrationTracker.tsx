@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { GlassWater, Droplet, Plus, RotateCcw, Cog, CheckCircle, XCircle } from 'lucide-react';
-import Card from '../ui/card';
-import Modal from '../ui/modal';
+import Card from '../ui/Card';
+import Modal from '../ui/Modal';
+import InputField from '../ui/Input';
 import { useHydrationStore } from '../../stores/hydration.store';
-import { InputField } from '../ui/input';
 
 export default function HydrationTracker() {
     const { hydration, meta, progress, isGoalReached, loading, addHydration, setMeta, resetHydration, fetchHydrationDaily } = useHydrationStore();
     const [open, setOpen] = useState(false);
+    const [tempMeta, setTempMeta] = useState(meta);
 
     useEffect(() => {
         fetchHydrationDaily();
@@ -23,12 +24,12 @@ export default function HydrationTracker() {
                     <p className="text-sm opacity-70">Acompanhe sua ingestão diária de água</p>
                 </div>
 
-                <button onClick={() => setOpen(true)} className="bg-white hover:bg-blue-50 border border-gray-300 text-black p-3 rounded-lg transition-colors">
-                    <Cog size={22} className={loading ? 'animate-spin' : ''} />
+                <button onClick={() => setOpen(true)} className="bg-white hover:bg-blue-50 border border-gray-300 opacity-50 text-black p-3 rounded-lg">
+                    <Cog size={22} />
                 </button>
             </header>
 
-            <Card title="Hidratação Hoje" icon={GlassWater}>
+            <Card title="Como está sua hidratação?" icon={GlassWater}>
                 <div className="flex flex-col">
                     <div className="flex justify-between items-center text-sm sm:text-base">
                         <h3 className="font-semibold italic">
@@ -76,7 +77,7 @@ export default function HydrationTracker() {
                     </div>
 
                     <div className="w-full flex items-center gap-4">
-                        <div className="flex-1 p-6 bg-linear-to-br bg-blue-50 rounded-2xl flex flex-col items-center shadow-sm border border-blue-200">
+                        <div className="flex-1 p-6 bg-blue-50 rounded-xs flex flex-col items-center border border-blue-200">
                             <GlassWater size={40} className="text-blue-600 mb-1" />
                             <span className="text-3xl font-bold text-slate-800">
                                 {hydration}
@@ -111,17 +112,26 @@ export default function HydrationTracker() {
                         <p className="text-sm text-slate-500">Defina seu objetivo de consumo diário</p>
                     </div>
 
-                    <InputField label="Meta diária em mililitros" type="number" onChange={(e) => setMeta(Number(e.target.value))} className="text-center text-lg font-semibold" />
+                    <InputField
+                        label="Meta diária em mililitros"
+                        placeholder="Digite o valor..."
+                        type="number"
+                        onChange={(e) => setTempMeta(Number(e.target.value))}
+                        className="text-center text-lg font-semibold"
+                    />
 
                     <button
-                        onClick={() => setOpen(false)}
-                        className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all"
+                        onClick={() => {
+                            setOpen(false);
+                            setMeta(tempMeta);
+                        }}
+                        className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700  shadow-blue-200 transition-colors"
                     >
                         Confirmar Alteração
                     </button>
 
                     <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
-                        <p className="text-xs text-slate-500">💡 Dica: O consumo ideal médio é de 35ml por cada kg do seu peso.</p>
+                        <p className="text-xs text-slate-500">Dica: O consumo ideal médio é de 35ml por cada kg do seu peso.</p>
                     </div>
                 </div>
             </Modal>
